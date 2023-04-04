@@ -6,3 +6,7 @@
 
 # IntelliJ
 out/
+
+# Maven
+.DS_Store
+target/
