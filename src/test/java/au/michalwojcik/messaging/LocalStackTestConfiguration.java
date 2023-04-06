@@ -24,7 +24,7 @@ public class LocalStackTestConfiguration {
             new BasicAWSCredentials("noop", "noop"));
 
     @Container
-    private static final LocalStackContainer LOCAL_STACK_CONTAINER = new LocalStackContainer(
+    protected static final LocalStackContainer LOCAL_STACK_CONTAINER = new LocalStackContainer(
             DockerImageName.parse("localstack/localstack:1.3.1"))
             .withServices(LocalStackContainer.Service.SQS)
             .withServices(LocalStackContainer.Service.SNS)

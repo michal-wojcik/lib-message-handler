@@ -5,7 +5,10 @@ import au.michalwojcik.messaging.SimpleMessage;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.util.Topics;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.awspring.cloud.autoconfigure.messaging.SnsAutoConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -60,6 +63,14 @@ class SenderIntegrationTest {
 
                     ReceiveMessageResult receiveMessageResult = amazonSQSAsync.receiveMessage(queueUrl);
                     Assertions.assertFalse(receiveMessageResult.getMessages().isEmpty());
+
+                    JsonNode body = JsonMapper.builder().build().readTree(receiveMessageResult.getMessages().get(0).getBody());
+                    Assertions.assertEquals(
+                            "{\"event\":{\"id\":\"id\",\"timestamp\":[2023,4,5,20,43]},\"eventName\":\"simple-message\"}",
+                            body.get("Message").asText()
+                    );
                 });
+
+        amazonSQSAsync.purgeQueue(new PurgeQueueRequest().withQueueUrl(queueUrl));
     }
 }
