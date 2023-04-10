@@ -3,7 +3,9 @@ package au.michalwojcik.messaging.receiver.handler;
 /**
  * @author michal-wojcik
  */
-public sealed interface Handler permits MessageHandler, S3NotificationHandler {
+public sealed interface Handler<T> permits NotificationHandler, S3NotificationHandler {
 
-    void handle();
+    void handle(T t);
+
+    boolean supports(String argument);
 }

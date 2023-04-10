@@ -5,21 +5,21 @@ import io.awspring.cloud.messaging.listener.SqsMessageDeletionPolicy;
 import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import org.springframework.messaging.Message;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * @author michal-wojcik
  */
 public class Receiver {
 
-    private Collection<Resolver> resolvers;
+    private final List<Resolver> resolvers;
 
-    public Receiver(Collection<Resolver> resolvers) {
+    public Receiver(List<Resolver> resolvers) {
         this.resolvers = resolvers;
     }
 
     @SqsListener(value = "${message.receiver.queue.name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(Message<String> message) {
-
+        resolvers.forEach(resolver -> resolver.resolve(message));
     }
 }

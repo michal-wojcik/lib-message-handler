@@ -1,6 +1,6 @@
 package au.michalwojcik.messaging.sender;
 
-import au.michalwojcik.messaging.Message;
+import au.michalwojcik.messaging.Notification;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,9 +35,9 @@ public class Sender {
     }
 
     public void send(Object event, String eventName, String topicName) {
-        Message<Object> message = new Message<>(event, eventName);
+        Notification<Object> notification = new Notification<>(event, eventName);
         notificationMessagingTemplate.convertAndSend(
                 topicName,
-                (JsonNode) OBJECT_MAPPER_SENDER.valueToTree(message));
+                (JsonNode) OBJECT_MAPPER_SENDER.valueToTree(notification));
     }
 }
