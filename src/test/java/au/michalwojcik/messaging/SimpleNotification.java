@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 /**
  * @author michal-wojcik
  */
-public record SimpleMessage(
+public record SimpleNotification(
         String id,
         LocalDateTime timestamp) {
 }

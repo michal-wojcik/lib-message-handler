@@ -1,7 +1,7 @@
 package au.michalwojcik.messaging.sender;
 
 import au.michalwojcik.messaging.LocalStackTestConfiguration;
-import au.michalwojcik.messaging.SimpleMessage;
+import au.michalwojcik.messaging.SimpleNotification;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.util.Topics;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
@@ -25,35 +25,35 @@ import java.time.LocalDateTime;
  * @author michal-wojcik
  */
 @Import(LocalStackTestConfiguration.class)
-@TestPropertySource(properties = "message.sender.topic.name=topic-name")
+@TestPropertySource(properties = "notification.sender.topic.name=topic-name")
 @SpringBootTest(classes = {
         Sender.class,
         SnsAutoConfiguration.class
 })
-class SenderIntegrationTest {
+class SenderIT {
 
     @Autowired
     private Sender sender;
 
     @Autowired
-    private AmazonSNSAsync amazonSNSAsync;
+    private AmazonSNSAsync amazonSNS;
 
     @Autowired
-    private AmazonSQSAsync amazonSQSAsync;
+    private AmazonSQSAsync amazonSQS;
 
     @Test
-    void shouldSendMessage() {
+    void shouldSendNotification() {
         // Given
-        String topicArn = amazonSNSAsync.createTopic("topic-name").getTopicArn();
-        String queueUrl = amazonSQSAsync.createQueue("queue-name").getQueueUrl();
+        String topicArn = amazonSNS.listTopics().getTopics().get(0).getTopicArn();
+        String queueUrl = amazonSQS.listQueues().getQueueUrls().get(0);
 
-        String subscriptionArn = Topics.subscribeQueue(amazonSNSAsync, amazonSQSAsync, topicArn, queueUrl);
+        String subscriptionArn = Topics.subscribeQueue(amazonSNS, amazonSQS, topicArn, queueUrl);
 
-        SimpleMessage simpleMessage = new SimpleMessage(
+        SimpleNotification simpleNotification = new SimpleNotification(
                 "id",
                 LocalDateTime.of(2023, 4, 5, 20, 43));
         // When
-        sender.send(simpleMessage, "simple-message");
+        sender.send(simpleNotification, "simple-notification");
         // Then
         Awaitility.await()
                 .atMost(Duration.ofSeconds(4))
@@ -61,16 +61,16 @@ class SenderIntegrationTest {
                 .untilAsserted(() -> {
                     Assertions.assertNotNull(subscriptionArn);
 
-                    ReceiveMessageResult receiveMessageResult = amazonSQSAsync.receiveMessage(queueUrl);
+                    ReceiveMessageResult receiveMessageResult = amazonSQS.receiveMessage(queueUrl);
                     Assertions.assertFalse(receiveMessageResult.getMessages().isEmpty());
 
                     JsonNode body = JsonMapper.builder().build().readTree(receiveMessageResult.getMessages().get(0).getBody());
                     Assertions.assertEquals(
-                            "{\"event\":{\"id\":\"id\",\"timestamp\":[2023,4,5,20,43]},\"eventName\":\"simple-message\"}",
+                            "{\"event\":{\"id\":\"id\",\"timestamp\":[2023,4,5,20,43]},\"eventName\":\"simple-notification\"}",
                             body.get("Message").asText()
                     );
                 });
 
-        amazonSQSAsync.purgeQueue(new PurgeQueueRequest().withQueueUrl(queueUrl));
+        amazonSQS.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 }

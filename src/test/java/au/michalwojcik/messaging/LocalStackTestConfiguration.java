@@ -32,31 +32,40 @@ public class LocalStackTestConfiguration {
 
     @Lazy
     @Bean
-    AmazonSQSAsync amazonSQSAsync() {
-        if (!LOCAL_STACK_CONTAINER.isRunning()) {
-            LOCAL_STACK_CONTAINER.start();
-        }
+    AmazonSQSAsync amazonSQS() {
+        startContainer();
 
-        return new AmazonSQSBufferedAsyncClient(
+        AmazonSQSAsync amazonSQS = new AmazonSQSBufferedAsyncClient(
                 AmazonSQSAsyncClient
                         .asyncBuilder()
                         .withCredentials(AWS_CREDENTIALS_PROVIDER)
                         .withEndpointConfiguration(LOCAL_STACK_CONTAINER.getEndpointConfiguration(LocalStackContainer.Service.SQS))
-                        .build()
-        );
+                        .build());
+
+        amazonSQS.createQueue("queue-name");
+
+        return amazonSQS;
     }
 
     @Lazy
     @Bean
-    AmazonSNSAsync amazonSNSAsync() {
-        if (!LOCAL_STACK_CONTAINER.isRunning()) {
-            LOCAL_STACK_CONTAINER.start();
-        }
+    AmazonSNSAsync amazonSNS() {
+        startContainer();
 
-        return AmazonSNSAsyncClientBuilder
+        AmazonSNSAsync amazonSNS = AmazonSNSAsyncClientBuilder
                 .standard()
                 .withCredentials(AWS_CREDENTIALS_PROVIDER)
                 .withEndpointConfiguration(LOCAL_STACK_CONTAINER.getEndpointConfiguration(LocalStackContainer.Service.SNS))
                 .build();
+
+        amazonSNS.createTopic("topic-name");
+
+        return amazonSNS;
+    }
+
+    private static void startContainer() {
+        if (!LOCAL_STACK_CONTAINER.isRunning()) {
+            LOCAL_STACK_CONTAINER.start();
+        }
     }
 }

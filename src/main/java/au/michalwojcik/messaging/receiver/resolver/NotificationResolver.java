@@ -56,14 +56,9 @@ public final class NotificationResolver implements Resolver {
 
     private Optional<String> findNotificationName(JsonNode jsonNode) {
         return Optional.of(jsonNode)
-                .map(node -> node.get("MessageAttributes"))
-                .map(node -> node.get("eventName"))
-                .map(node -> node.get("Value"))
-                .map(JsonNode::asText)
-                .or(() -> Optional.of(jsonNode)
-                        .map(node -> node.get("Message"))
-                        .map(toNotification())
-                        .map(Notification::eventName));
+                .map(node -> node.get("Message"))
+                .map(toNotification())
+                .map(Notification::eventName);
     }
 
     private Function<JsonNode, Notification<?>> toNotification() {

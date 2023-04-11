@@ -25,7 +25,7 @@ public class Sender {
 
     public Sender(
             AmazonSNSAsync amazonSNSAsync,
-            @Value("${message.sender.topic.name}") String topicName) {
+            @Value("${notification.sender.topic.name}") String topicName) {
         this.notificationMessagingTemplate = new NotificationMessagingTemplate(amazonSNSAsync);
         this.topicName = topicName;
     }

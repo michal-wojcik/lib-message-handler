@@ -18,7 +18,7 @@ public class Receiver {
         this.resolvers = resolvers;
     }
 
-    @SqsListener(value = "${message.receiver.queue.name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    @SqsListener(value = "${notification.receiver.queue.name}", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     public void receive(Message<String> message) {
         resolvers.forEach(resolver -> resolver.resolve(message));
     }
