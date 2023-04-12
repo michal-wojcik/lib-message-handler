@@ -3,9 +3,10 @@ package au.michalwojcik.messaging.receiver;
 import au.michalwojcik.messaging.LocalStackTestConfiguration;
 import au.michalwojcik.messaging.Notification;
 import au.michalwojcik.messaging.SimpleNotification;
-import au.michalwojcik.messaging.receiver.handler.NotificationHandler;
 import au.michalwojcik.messaging.receiver.mapper.MessageMapper;
 import au.michalwojcik.messaging.receiver.resolver.NotificationResolver;
+import au.michalwojcik.messaging.receiver.resolver.S3NotificationResolver;
+import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
@@ -43,52 +44,47 @@ class ReceiverIT {
     @SpyBean
     private SimpleNotificationHandler simpleNotificationHandler;
 
+    @SpyBean
+    private S3NotificationResolver s3NotificationResolver;
+
+    @SpyBean
+    private SimpleS3NotificationHandler simpleS3NotificationHandler;
+
     @Test
     void shouldReceiveNotification() {
         // Given
         String queueUrl = amazonSQS.listQueues().getQueueUrls().get(0);
         // When
-        amazonSQS.sendMessage(new SendMessageRequest(queueUrl, SNS_PAYLOAD));
+        amazonSQS.sendMessage(new SendMessageRequest(queueUrl, SNS_MESSAGE_PAYLOAD));
+        amazonSQS.sendMessage(new SendMessageRequest(queueUrl, S3_NOTIFICATION));
         // Then
         Awaitility.await()
                 .atMost(Duration.ofSeconds(4))
                 .pollInterval(Duration.ofMillis(256))
                 .untilAsserted(() -> {
-                    Mockito.verify(notificationResolver, Mockito.times(1))
+                    Mockito.verify(notificationResolver, Mockito.times(2))
+                            .resolve(Mockito.any());
+                    Mockito.verify(s3NotificationResolver, Mockito.times(2))
                             .resolve(Mockito.any());
 
                     Mockito.verify(simpleNotificationHandler, Mockito.times(1))
                             .supports("simple-notification");
+                    Mockito.verify(simpleS3NotificationHandler, Mockito.times(1))
+                            .supports("path/to/file.csv");
 
                     Notification<SimpleNotification> notification = new Notification<>(
                             new SimpleNotification("id", LocalDateTime.of(2023, 4, 5, 20, 43)),
                             "simple-notification");
                     Mockito.verify(simpleNotificationHandler, Mockito.times(1))
                             .handle(notification);
+                    Mockito.verify(simpleS3NotificationHandler, Mockito.times(1))
+                            .handle(Mockito.any(S3EventNotification.S3EventNotificationRecord.class));
                 });
 
         amazonSQS.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 
-    private static final class SimpleNotificationHandler implements NotificationHandler<Notification<SimpleNotification>> {
-
-        @Override
-        public void handle(Notification<SimpleNotification> simpleNotificationNotification) {
-
-        }
-
-        @Override
-        public boolean supports(String argument) {
-            return "simple-notification".equals(argument);
-        }
-
-        @Override
-        public Class<?> getType() {
-            return SimpleNotification.class;
-        }
-    }
-
-    private static final String SNS_PAYLOAD = """
+    private static final String SNS_MESSAGE_PAYLOAD = """
             {
               "Type": "Notification",
               "MessageId": "9b244a0f-6334-499b-93bd-cb171aadc967",
@@ -113,6 +109,48 @@ class ReceiverIT {
                   "Value": "1681171400457"
                 }
               }
+            }
+            """;
+
+    private static final String S3_NOTIFICATION = """
+            {
+               "Records":[
+                  {
+                     "eventVersion":"2.2",
+                     "eventSource":"aws:s3",
+                     "awsRegion":"us-west-2",
+                     "eventTime":"1970-01-01T00:00:00.000Z",
+                     "eventName":"event-type",
+                     "userIdentity":{
+                        "principalId":"Amazon-customer-ID-of-the-user-who-caused-the-event"
+                     },
+                     "requestParameters":{
+                        "sourceIPAddress":"ip-address-where-request-came-from"
+                     },
+                     "responseElements":{
+                        "x-amz-request-id":"Amazon S3 generated request ID",
+                        "x-amz-id-2":"Amazon S3 host that processed the request"
+                     },
+                     "s3":{
+                        "s3SchemaVersion":"1.0",
+                        "configurationId":"ID found in the bucket notification configuration",
+                        "bucket":{
+                           "name":"bucket-name",
+                           "ownerIdentity":{
+                              "principalId":"Amazon-customer-ID-of-the-bucket-owner"
+                           },
+                           "arn":"bucket-ARN"
+                        },
+                        "object":{
+                           "key":"path/to/file.csv",
+                           "size": 512,
+                           "eTag":"object eTag",
+                           "versionId":"object version if bucket is versioning-enabled, otherwise null",
+                           "sequencer": "a string representation of a hexadecimal value used to determine event sequence, only used with PUTs and DELETEs"
+                        }
+                     }
+                  }
+               ]
             }
             """;
 }

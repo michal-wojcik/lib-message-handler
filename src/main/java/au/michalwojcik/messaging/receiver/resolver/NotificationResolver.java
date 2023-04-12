@@ -1,7 +1,6 @@
 package au.michalwojcik.messaging.receiver.resolver;
 
 import au.michalwojcik.messaging.Notification;
-import au.michalwojcik.messaging.receiver.handler.Handler;
 import au.michalwojcik.messaging.receiver.handler.NotificationHandler;
 import au.michalwojcik.messaging.receiver.mapper.Mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +10,7 @@ import org.springframework.messaging.Message;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -30,28 +30,33 @@ public final class NotificationResolver implements Resolver {
     public void resolve(Message<String> message) {
         JsonNode jsonNode = mapper.convertMessage(message);
         findNotificationName(jsonNode)
-                .ifPresent(name -> notificationHandlers.stream()
-                        .filter(handler -> handler.supports(name))
-                        .forEach(handler -> convertNotification(jsonNode, handler))
-                );
+                .ifPresent(resolveByName(jsonNode));
 
     }
 
-    private void convertNotification(JsonNode jsonNode, Handler<?> handler) {
-        JavaType javaType = mapper.getMapper().getTypeFactory().constructParametricType(
-                Notification.class,
-                ((NotificationHandler<?>) handler).getType());
+    private Consumer<String> resolveByName(JsonNode jsonNode) {
+        return name -> notificationHandlers.stream()
+                .filter(handler -> handler.supports(name))
+                .forEach(handleNotification(jsonNode));
+    }
 
-        JsonNode messageNode = jsonNode.get("Message");
-        if (messageNode.isTextual()) {
-            try {
-                handler.handle(mapper.getMapper().readValue(messageNode.textValue(), javaType));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+    private Consumer<NotificationHandler<?>> handleNotification(JsonNode jsonNode) {
+        return handler -> {
+            JavaType javaType = mapper.getMapper().getTypeFactory().constructParametricType(
+                    Notification.class,
+                    handler.getType());
+
+            JsonNode messageNode = jsonNode.get("Message");
+            if (messageNode.isTextual()) {
+                try {
+                    handler.handle(mapper.getMapper().readValue(messageNode.textValue(), javaType));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                handler.handle(mapper.getMapper().convertValue(messageNode, javaType));
             }
-        } else {
-            handler.handle(mapper.getMapper().convertValue(messageNode, javaType));
-        }
+        };
     }
 
     private Optional<String> findNotificationName(JsonNode jsonNode) {
