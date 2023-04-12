@@ -27,13 +27,13 @@ import java.time.LocalDateTime;
 @Import(LocalStackTestConfiguration.class)
 @TestPropertySource(properties = "notification.sender.topic.name=topic-name")
 @SpringBootTest(classes = {
-        Sender.class,
+        NotificationSender.class,
         SnsAutoConfiguration.class
 })
-class SenderIT {
+class NotificationSenderIT {
 
     @Autowired
-    private Sender sender;
+    private NotificationSender notificationSender;
 
     @Autowired
     private AmazonSNSAsync amazonSNS;
@@ -53,7 +53,7 @@ class SenderIT {
                 "id",
                 LocalDateTime.of(2023, 4, 5, 20, 43));
         // When
-        sender.send(simpleNotification, "simple-notification");
+        notificationSender.send(simpleNotification, "simple-notification");
         // Then
         Awaitility.await()
                 .atMost(Duration.ofSeconds(4))

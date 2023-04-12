@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 /**
  * @author michal-wojcik
  */
-public class Sender {
+public class NotificationSender {
 
     private static final ObjectMapper OBJECT_MAPPER_SENDER = JsonMapper.builder()
             .addModule(new JavaTimeModule())
@@ -23,7 +23,7 @@ public class Sender {
     private final NotificationMessagingTemplate notificationMessagingTemplate;
     private final String topicName;
 
-    public Sender(
+    public NotificationSender(
             AmazonSNSAsync amazonSNSAsync,
             @Value("${notification.sender.topic.name}") String topicName) {
         this.notificationMessagingTemplate = new NotificationMessagingTemplate(amazonSNSAsync);
