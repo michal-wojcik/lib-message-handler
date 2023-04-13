@@ -1,7 +1,7 @@
 package au.michalwojcik.messaging.receiver.resolver;
 
+import au.michalwojcik.messaging.mapper.ReceiverMapper;
 import au.michalwojcik.messaging.receiver.handler.S3NotificationHandler;
-import au.michalwojcik.messaging.receiver.mapper.Mapper;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,9 +17,9 @@ import java.util.function.Consumer;
 public final class S3NotificationResolver implements Resolver {
 
     private final List<S3NotificationHandler> s3NotificationHandlers;
-    private final Mapper mapper;
+    private final ReceiverMapper mapper;
 
-    public S3NotificationResolver(List<S3NotificationHandler> s3NotificationHandlers, Mapper mapper) {
+    public S3NotificationResolver(List<S3NotificationHandler> s3NotificationHandlers, ReceiverMapper mapper) {
         this.s3NotificationHandlers = s3NotificationHandlers;
         this.mapper = mapper;
     }

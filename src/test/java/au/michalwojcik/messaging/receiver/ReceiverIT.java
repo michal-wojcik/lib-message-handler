@@ -3,7 +3,7 @@ package au.michalwojcik.messaging.receiver;
 import au.michalwojcik.messaging.LocalStackTestConfiguration;
 import au.michalwojcik.messaging.Notification;
 import au.michalwojcik.messaging.SimpleNotification;
-import au.michalwojcik.messaging.receiver.mapper.MessageMapper;
+import au.michalwojcik.messaging.mapper.DeserializationMapper;
 import au.michalwojcik.messaging.receiver.resolver.NotificationResolver;
 import au.michalwojcik.messaging.receiver.resolver.S3NotificationResolver;
 import com.amazonaws.services.s3.event.S3EventNotification;
@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 @TestPropertySource(properties = "notification.receiver.queue.name=queue-name")
 @SpringBootTest(classes = {
         Receiver.class,
-        MessageMapper.class,
+        DeserializationMapper.class,
         SqsAutoConfiguration.class
 })
 class ReceiverIT {

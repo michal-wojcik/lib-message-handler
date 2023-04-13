@@ -1,6 +1,7 @@
-package au.michalwojcik.messaging.receiver.mapper;
+package au.michalwojcik.messaging.mapper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,9 +13,9 @@ import org.springframework.messaging.Message;
 /**
  * @author michal-wojcik
  */
-public class MessageMapper implements Mapper {
+public final class DeserializationMapper implements ReceiverMapper {
 
-    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+    private static final ObjectMapper DESERIALIZATION_MAPPER = JsonMapper.builder()
             .addModule(new JavaTimeModule())
             .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
             .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
@@ -24,14 +25,14 @@ public class MessageMapper implements Mapper {
 
     @Override
     public ObjectMapper getMapper() {
-        return OBJECT_MAPPER;
+        return DESERIALIZATION_MAPPER;
     }
 
     @Override
     public JsonNode convertMessage(Message<String> message) {
         try {
-            return OBJECT_MAPPER.readTree(message.getPayload());
-        } catch (Exception e) {
+            return DESERIALIZATION_MAPPER.readTree(message.getPayload());
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }

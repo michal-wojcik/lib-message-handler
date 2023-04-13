@@ -1,8 +1,8 @@
 package au.michalwojcik.messaging.receiver.resolver;
 
 import au.michalwojcik.messaging.Notification;
+import au.michalwojcik.messaging.mapper.ReceiverMapper;
 import au.michalwojcik.messaging.receiver.handler.NotificationHandler;
-import au.michalwojcik.messaging.receiver.mapper.Mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,9 +19,9 @@ import java.util.function.Function;
 public final class NotificationResolver implements Resolver {
 
     private final List<NotificationHandler<?>> notificationHandlers;
-    private final Mapper mapper;
+    private final ReceiverMapper mapper;
 
-    public NotificationResolver(List<NotificationHandler<?>> notificationHandlers, Mapper mapper) {
+    public NotificationResolver(List<NotificationHandler<?>> notificationHandlers, ReceiverMapper mapper) {
         this.notificationHandlers = notificationHandlers;
         this.mapper = mapper;
     }

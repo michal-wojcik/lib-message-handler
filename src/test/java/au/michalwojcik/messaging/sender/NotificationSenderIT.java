@@ -2,6 +2,7 @@ package au.michalwojcik.messaging.sender;
 
 import au.michalwojcik.messaging.LocalStackTestConfiguration;
 import au.michalwojcik.messaging.SimpleNotification;
+import au.michalwojcik.messaging.mapper.SerializationMapper;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.util.Topics;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 @Import(LocalStackTestConfiguration.class)
 @TestPropertySource(properties = "notification.sender.topic.name=topic-name")
 @SpringBootTest(classes = {
+        SerializationMapper.class,
         NotificationSender.class,
         SnsAutoConfiguration.class
 })
