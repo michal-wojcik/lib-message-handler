@@ -29,8 +29,8 @@ import java.time.LocalDateTime;
 @Import(LocalStackTestConfiguration.class)
 @TestPropertySource(properties = "notification.receiver.queue.name=queue-name")
 @SpringBootTest(classes = {
-        Receiver.class,
         DeserializationMapper.class,
+        Receiver.class,
         SqsAutoConfiguration.class
 })
 class ReceiverIT {
@@ -82,6 +82,7 @@ class ReceiverIT {
                 });
 
         amazonSQS.purgeQueue(new PurgeQueueRequest(queueUrl));
+        amazonSQS.deleteQueue(queueUrl);
     }
 
     private static final String SNS_MESSAGE_PAYLOAD = """

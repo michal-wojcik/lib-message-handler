@@ -26,7 +26,11 @@ import java.time.LocalDateTime;
  * @author michal-wojcik
  */
 @Import(LocalStackTestConfiguration.class)
-@TestPropertySource(properties = "notification.sender.topic.name=topic-name")
+@TestPropertySource(
+        properties = {
+                "notification.sender.topic.name=topic-name",
+                "spring.cloud.aws.region.static=ap-southeast-2"
+        })
 @SpringBootTest(classes = {
         SerializationMapper.class,
         NotificationSender.class,
@@ -74,5 +78,7 @@ class NotificationSenderIT {
                 });
 
         amazonSQS.purgeQueue(new PurgeQueueRequest(queueUrl));
+        amazonSQS.deleteQueue(queueUrl);
+        amazonSNS.deleteTopic(topicArn);
     }
 }

@@ -20,11 +20,11 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers(disabledWithoutDocker = true)
 public class LocalStackTestConfiguration {
 
-    public static final AWSStaticCredentialsProvider AWS_CREDENTIALS_PROVIDER = new AWSStaticCredentialsProvider(
+    private static final AWSStaticCredentialsProvider AWS_CREDENTIALS_PROVIDER = new AWSStaticCredentialsProvider(
             new BasicAWSCredentials("noop", "noop"));
 
     @Container
-    protected static final LocalStackContainer LOCAL_STACK_CONTAINER = new LocalStackContainer(
+    private static final LocalStackContainer LOCAL_STACK_CONTAINER = new LocalStackContainer(
             DockerImageName.parse("localstack/localstack:1.3.1"))
             .withServices(LocalStackContainer.Service.SQS)
             .withServices(LocalStackContainer.Service.SNS)
