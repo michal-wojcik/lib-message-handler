@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 @Import(LocalStackTestConfiguration.class)
 @TestPropertySource(
         properties = {
-                "notification.sender.topic.name=topic-name",
+                "notification.sender.topic.name=" + LocalStackTestConfiguration.TOPIC_NAME,
                 "spring.cloud.aws.region.static=ap-southeast-2"
         })
 @SpringBootTest(classes = {

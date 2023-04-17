@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
  * @author michal-wojcik
  */
 @Import(LocalStackTestConfiguration.class)
-@TestPropertySource(properties = "notification.receiver.queue.name=queue-name")
+@TestPropertySource(properties = "notification.receiver.queue.name=" + LocalStackTestConfiguration.QUEUE_NAME)
 @SpringBootTest(classes = {
         DeserializationMapper.class,
         Receiver.class,

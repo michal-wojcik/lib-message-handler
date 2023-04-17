@@ -20,6 +20,9 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers(disabledWithoutDocker = true)
 public class LocalStackTestConfiguration {
 
+    public static final String QUEUE_NAME = "queue-name";
+    public static final String TOPIC_NAME = "topic-name";
+
     private static final AWSStaticCredentialsProvider AWS_CREDENTIALS_PROVIDER = new AWSStaticCredentialsProvider(
             new BasicAWSCredentials("noop", "noop"));
 
@@ -42,7 +45,7 @@ public class LocalStackTestConfiguration {
                         .withEndpointConfiguration(LOCAL_STACK_CONTAINER.getEndpointConfiguration(LocalStackContainer.Service.SQS))
                         .build());
 
-        amazonSQS.createQueue("queue-name");
+        amazonSQS.createQueue(QUEUE_NAME);
 
         return amazonSQS;
     }
@@ -58,7 +61,7 @@ public class LocalStackTestConfiguration {
                 .withEndpointConfiguration(LOCAL_STACK_CONTAINER.getEndpointConfiguration(LocalStackContainer.Service.SNS))
                 .build();
 
-        amazonSNS.createTopic("topic-name");
+        amazonSNS.createTopic(TOPIC_NAME);
 
         return amazonSNS;
     }
