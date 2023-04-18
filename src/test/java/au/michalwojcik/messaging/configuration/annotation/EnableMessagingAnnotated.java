@@ -1,11 +1,14 @@
 package au.michalwojcik.messaging.configuration.annotation;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 
 /**
  * @author michal-wojcik
  */
-@Configuration
-@EnableMessaging
+@AutoConfiguration
+@EnableMessaging(
+        sender = SendStrategy.NOTIFICATION,
+        receiver = {ReceiveStrategy.NOTIFICATION, ReceiveStrategy.S3}
+)
 public class EnableMessagingAnnotated {
 }
